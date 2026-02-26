@@ -1,54 +1,50 @@
-# Tic Tac Toe Game in Python
+import tkinter as tk
+from tkinter import messagebox
 
-import random
+class TicTacToe:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Tic Tac Toe")
+        self.reset_game()
 
-def print_board(board):
-    for row in board:
-        print('|'.join(row))
-        print('-' * 5)
+    def reset_game(self):
+        self.board = [""] * 9
+        self.current_player = "X"
+        self.buttons = []
+        for i in range(9):
+            button = tk.Button(self.master, text="", font=("Arial", 20), width=5, height=2,
+                               command=lambda i=i: self.make_move(i))
+            button.grid(row=i // 3, column=i % 3)
+            self.buttons.append(button)
+        self.play_again_button = tk.Button(self.master, text="Play Again", font=("Arial", 20), command=self.reset_game)
+        self.play_again_button.grid(row=3, column=0, columnspan=3)
 
-def check_winner(board, player):
-    # Check rows, columns and diagonals for a win
-    for i in range(3):
-        if all([cell == player for cell in board[i]]) or all([board[j][i] == player for j in range(3)]):
-            return True
-    if board[0][0] == player and board[1][1] == player and board[2][2] == player:
-        return True
-    if board[0][2] == player and board[1][1] == player and board[2][0] == player:
-        return True
-    return False
-
-def is_board_full(board):
-    return all([cell != ' ' for row in board for cell in row])
-
-def play_game():
-    while True:
-        board = [[' ' for _ in range(3)] for _ in range(3)]
-        current_player = 'X'
-        game_over = False
-
-        while not game_over:
-            print_board(board)
-            row = int(input(f'Player {current_player}, enter your move (row 0-2): '))
-            col = int(input(f'Player {current_player}, enter your move (col 0-2): '))
-
-            if board[row][col] == ' ':
-                board[row][col] = current_player
-                if check_winner(board, current_player):
-                    print_board(board)
-                    print(f'Player {current_player} wins!')
-                    game_over = True
-                elif is_board_full(board):
-                    print_board(board)
-                    print('The game is a tie!')
-                    game_over = True
-                current_player = 'O' if current_player == 'X' else 'X'
+    def make_move(self, index):
+        if self.board[index] == "":
+            self.board[index] = self.current_player
+            self.buttons[index].config(text=self.current_player)
+            if self.check_winner():
+                messagebox.showinfo("Game Over", f"Player {self.current_player} wins!")
+                self.play_again()
+            elif "" not in self.board:
+                messagebox.showinfo("Game Over", "It's a tie!")
+                self.play_again()
             else:
-                print('Cell already taken, try again.')
+                self.current_player = "O" if self.current_player == "X" else "X"
 
-        play_again = input('Do you want to play again? (yes/no): ').lower()
-        if play_again != 'yes':
-            break
+    def check_winner(self):
+        winning_combinations = [(0, 1, 2), (3, 4, 5), (6, 7, 8),
+                                (0, 3, 6), (1, 4, 7), (2, 5, 8),
+                                (0, 4, 8), (2, 4, 6)]
+        for combo in winning_combinations:
+            if self.board[combo[0]] == self.board[combo[1]] == self.board[combo[2]] != "":
+                return True
+        return False
 
-if __name__ == '__main__':
-    play_game()
+    def play_again(self):
+        self.reset_game()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = TicTacToe(root)
+    root.mainloop()
